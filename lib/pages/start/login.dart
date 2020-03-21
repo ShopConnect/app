@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:shopconnect/constants.dart';
+
 import 'package:http/http.dart' as http;
+import 'package:shopconnect/models/user.dart';
 import 'dart:convert';
 
 import 'package:shopconnect/utils/token.dart';
@@ -116,27 +118,49 @@ class _LoginPageState extends State<LoginPage> {
       var token = jsonDecode(response.body);
       if (token != null) {
         Token.set(token['token']);
+        var tokenAuth = token['token'];
 
-        String fcmTokenJSON = '{"email": "$_email", "password": "$_password"}';
         final Map<String, String> header = {
-          "Authorization": "Bearer $token['token']",
+          "Authorization": "Bearer $tokenAuth",
           "Content-type": "application/json"
         };
 
-        http.Response responseToken = await http.post(
-          AppConstants.apiURL + "/auth/login",
-          headers: header,
-          body: fcmTokenJSON,
-        );
+        http.Response responseUser = await http
+            .get(AppConstants.apiURL + "/user/@me", headers: header);
 
-        int statusCodeToken = responseToken.statusCode;
+        int statusCodeUser = responseUser.statusCode;
+        if (statusCodeUser == 200) {
+          var userReponse = jsonDecode(responseUser.body);
+          User.id = userReponse['id'];
+          User.firstName = userReponse['firstName'];
+          User.lastName = userReponse['lastName'];
+          User.email = userReponse['email'];
+          User.country = userReponse['country'];
+          User.city = userReponse['city'];
+          User.zipCode = userReponse['zipCode'];
+          User.street = userReponse['street'];
+          User.houseNumber = userReponse['houseNumber'];
+          User.payPalHandle = userReponse['payPalHandle'];
+          User.iban = userReponse['iban'];
+          User.telephoneNumber = userReponse['telephoneNumber'];
+          User.isVerified = userReponse['isVerified'];
 
-        if (statusCode == 200) {
-          Navigator.pushNamedAndRemoveUntil(
-            context,
-            '/home',
-            (Route<dynamic> route) => false,
+          String fcmTokenJSON = '{"token": "$fcmToken"}';
+
+          http.Response responseToken = await http.post(
+            AppConstants.apiURL + "/user/@me/register-device",
+            headers: header,
+            body: fcmTokenJSON,
           );
+          int statusCodeToken = responseToken.statusCode;
+
+          if (statusCodeToken == 201) {
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              '/home',
+              (Route<dynamic> route) => false,
+            );
+          }
         }
       }
     } else if (statusCode == 401) {

@@ -10,7 +10,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   String initialRoute;
 
-  if(await Token.get() == null) {
+  if (await Token.get() == null) {
     initialRoute = '/start';
   } else {
     initialRoute = '/home';
@@ -29,8 +29,11 @@ class ShopConnect extends StatelessWidget {
   Widget build(BuildContext context) {
     notificationsManager = PushNotificationsManager().init();
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Shop Connect',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
+        primaryColor: Color(0xFF3CA8BA),
+        accentColor: Color(0xFFDEDEDEDE),
         primarySwatch: Colors.blue,
       ),
       initialRoute: initialRoute,

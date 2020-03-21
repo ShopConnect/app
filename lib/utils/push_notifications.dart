@@ -26,6 +26,11 @@ class PushNotificationsManager {
           print('on launch $message');
         },
       );
+      
+      _firebaseMessaging.subscribeToTopic('news');
+      _firebaseMessaging.subscribeToTopic('general');
+      _firebaseMessaging.subscribeToTopic('offtopic');
+
       // For testing purposes print the Firebase Messaging token
       String token = await _firebaseMessaging.getToken();
       print("FirebaseMessaging token: $token");

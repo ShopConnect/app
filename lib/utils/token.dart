@@ -10,6 +10,11 @@ class Token {
     storage.write(key: 'token', value: token);
   }
 
+  static void delete() async {
+    final storage = FlutterSecureStorage();
+    storage.delete(key: 'token');
+  }
+
   static Future<String> get() async {
     final storage = FlutterSecureStorage();
     var token = await storage.read(key: 'token');
