@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:shopconnect/pages/start/login.dart';
+import 'package:shopconnect/pages/start/register.dart';
+import 'package:shopconnect/pages/start/start.dart';
 
 void main() => runApp(ShopConnect());
 
@@ -10,7 +13,12 @@ class ShopConnect extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      initialRoute: '/start',
+      routes: {
+        '/start': (context) => StartPage(),
+        '/start/login': (context) => LoginPage(),
+        '/start/register': (context) => RegisterPage(),
+      },
     );
   }
 }

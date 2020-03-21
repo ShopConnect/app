@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "1077373684514",
+    "firebase_url": "https://shopconnect-1b7b3.firebaseio.com",
+    "project_id": "shopconnect-1b7b3",
+    "storage_bucket": "shopconnect-1b7b3.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1077373684514:android:74d0cae2f5dcb4c036f37b",
+        "android_client_info": {
+          "package_name": "de.fruchtsaft.shopconnect"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1077373684514-3lg43j9m90j6n1lkk4nc5spk9ln4iusg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAGSCEn91NGx0i7-l9t8OXohF1Vn3-IMnw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1077373684514-3lg43j9m90j6n1lkk4nc5spk9ln4iusg.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
