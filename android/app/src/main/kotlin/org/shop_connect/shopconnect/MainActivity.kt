@@ -1,4 +1,4 @@
-package de.fruchtsaft.shopconnect
+package org.shop_connect.shopconnect
 
 import androidx.annotation.NonNull;
 import io.flutter.embedding.android.FlutterActivity

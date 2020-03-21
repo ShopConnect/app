@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:shopconnect/constants.dart';
 import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+import 'package:shopconnect/utils/token.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -9,16 +13,20 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   bool _autoValidate = false;
   String _email;
   String _password;
+  bool _wrongPassword = false;
+  // TODO: Message box that informs the user he is BANNED
+  bool _userDeactivated = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('Anmelden')),
       body: SingleChildScrollView(
-        child: new Container(
+        child: Container(
           margin: EdgeInsets.all(15.0),
           child: Form(
             key: _formKey,
@@ -31,7 +39,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget formUI() {
-    return new Column(
+    return Column(
       children: <Widget>[
         TextFormField(
           decoration: const InputDecoration(labelText: 'E-Mail Adresse'),
@@ -45,13 +53,7 @@ class _LoginPageState extends State<LoginPage> {
           decoration: const InputDecoration(labelText: 'Passwort'),
           obscureText: true,
           keyboardType: TextInputType.visiblePassword,
-          validator: (String arg) {
-            if (arg.length < 8) {
-              return 'Bitte geben Sie ein korrektes Passwort an!';
-            } else {
-              return null;
-            }
-          },
+          validator: validatePassword,
           onSaved: (String val) {
             _password = val;
           },
@@ -59,7 +61,10 @@ class _LoginPageState extends State<LoginPage> {
         SizedBox(
           height: 10,
         ),
-        RaisedButton(onPressed: _validateInputs, child: new Text('Anmelden')),
+        RaisedButton(
+          onPressed: _validateInputs,
+          child: Text('Anmelden'),
+        ),
       ],
     );
   }
@@ -67,11 +72,22 @@ class _LoginPageState extends State<LoginPage> {
   String validateEmail(String value) {
     Pattern pattern =
         r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
-    RegExp regex = new RegExp(pattern);
-    if (!regex.hasMatch(value))
-      return 'Enter Valid Email';
-    else
+    RegExp regex = RegExp(pattern);
+    if (!regex.hasMatch(value)) {
+      return 'Bitte geben Sie eine gültige E-Mail Adresse ein!';
+    } else {
       return null;
+    }
+  }
+
+  String validatePassword(String value) {
+    if (value.length < 8) {
+      return 'Bitte geben Sie ein korrektes Passwort an!';
+    } else if (_wrongPassword) {
+      return 'Ihr Passwort ist falsch!';
+    } else {
+      return null;
+    }
   }
 
   void _validateInputs() {
@@ -86,19 +102,57 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void login() async {
-    String json = '{"email": $_email, "password": $_password}';
+    String fcmToken = await _firebaseMessaging.getToken();
+
+    String json = '{"email": "$_email", "password": "$_password"}';
     http.Response response = await http.post(
-        AppConstants.apiURL + "/auth/login",
-        headers: AppConstants.postHeaders,
-        body: json);
+      AppConstants.apiURL + "/auth/login",
+      headers: AppConstants.postHeaders,
+      body: json,
+    );
 
     int statusCode = response.statusCode;
+    if (statusCode == 201) {
+      var token = jsonDecode(response.body);
+      if (token != null) {
+        Token.set(token['token']);
 
-    if (statusCode == 200) {
-      //TODO: Change route
-      String body = response.body;
-      Navigator.pushNamed(context, '/');
-    } else if (statusCode == 400) {
+        String fcmTokenJSON = '{"email": "$_email", "password": "$_password"}';
+        final Map<String, String> header = {
+          "Authorization": "Bearer $token['token']",
+          "Content-type": "application/json"
+        };
+
+        http.Response responseToken = await http.post(
+          AppConstants.apiURL + "/auth/login",
+          headers: header,
+          body: fcmTokenJSON,
+        );
+
+        int statusCodeToken = responseToken.statusCode;
+
+        if (statusCode == 200) {
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            '/home',
+            (Route<dynamic> route) => false,
+          );
+        }
+      }
+    } else if (statusCode == 401) {
+      var result = jsonDecode(response.body);
+      if (result['message'] == 'password') {
+        _wrongPassword = true;
+      } else {
+        _wrongPassword = false;
+      }
+
+      if (result['message'] == 'deactivated') {
+        _userDeactivated = true;
+      } else {
+        _userDeactivated = false;
+      }
+    } else if (statusCode == 404) {
       //TODO: Add post message that register failed because username is already in use
     }
   }
