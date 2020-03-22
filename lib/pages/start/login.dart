@@ -154,6 +154,8 @@ class _LoginPageState extends State<LoginPage> {
           );
           int statusCodeToken = responseToken.statusCode;
 
+          User.loadOrders();
+
           if (statusCodeToken == 201) {
             Navigator.pushNamedAndRemoveUntil(
               context,

@@ -1,11 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:shopconnect/enums/orderstate.dart';
-import 'package:shopconnect/models/item.dart';
 
 class Order {
   int id;
-  List<Item> items = [];
-  double maxValue = 0;
+  List<int> items = [];
+  num maxValue;
   OrderState state;
 
   Order({

@@ -1,11 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:shopconnect/constants.dart';
-import 'package:shopconnect/models/order.dart';
-import 'package:http/http.dart' as http;
-import 'package:shopconnect/utils/token.dart';
 import 'package:shopconnect/models/user.dart';
-
-import 'dart:convert';
+import 'package:shopconnect/widgets/ordercard.dart';
 
 class MyOrders extends StatefulWidget {
   @override
@@ -13,13 +8,47 @@ class MyOrders extends StatefulWidget {
 }
 
 class _MyOrdersState extends State<MyOrders> {
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
+      GlobalKey<RefreshIndicatorState>();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => _refreshIndicatorKey.currentState.show());
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Meine Einkaufslisten'),
+        actions: <Widget>[
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            tooltip: 'Aktualisieren',
+            onPressed: () => _refreshIndicatorKey.currentState.show(),
+          ),
+        ],
       ),
-      body: Text('test'),
+      body: Container(
+        height: MediaQuery.of(context).size.height,
+        child: RefreshIndicator(
+          key: _refreshIndicatorKey,
+          onRefresh: () async {
+            await User.loadOrders();
+            setState(() {
+              User.ownedOrders = User.ownedOrders;
+            });
+          },
+          child: ListView.builder(
+            itemBuilder: (context, index) {
+              return OrderCard(User.ownedOrders[index]);
+            },
+            itemCount: User.ownedOrders.isEmpty ? 0 : User.ownedOrders.length,
+          ),
+        ),
+      ),
       floatingActionButton: GestureDetector(
         child: FloatingActionButton(
           onPressed: null,
@@ -27,25 +56,5 @@ class _MyOrdersState extends State<MyOrders> {
         ),
       ),
     );
-  }
-
-  void loadOrders() async {
-    var token = Token.get();
-    final Map<String, String> header = {
-      "Authorization": "Bearer $token",
-      "Content-type": "application/json"
-    };
-
-    http.Response response = await http.get(
-      AppConstants.apiURL + "/user/@me/orders",
-      headers: header,
-    );
-
-    if (response.statusCode == 200) {
-      List<dynamic> orders = jsonDecode(response.body);
-      orders.forEach((item) =>
-        User.ownedOrders.add(new Order(id: item.id, items: item.items, maxValue: item.maxValue, state: item.state))
-      );
-    }
   }
 }

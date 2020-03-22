@@ -7,7 +7,7 @@ import 'package:shopconnect/models/category.dart';
 import 'package:shopconnect/pages/main/myorders/myorders.dart';
 import 'package:shopconnect/pages/main/orders/orders.dart';
 import 'package:shopconnect/pages/main/settings/settings.dart';
-import 'package:shopconnect/utils/categories.dart';
+import 'package:shopconnect/utils/lists.dart';
 import 'package:shopconnect/utils/token.dart';
 
 class Home extends StatefulWidget {
@@ -27,26 +27,6 @@ class _HomeState extends State<Home> {
     setState(() {
       _selectedIndex = index;
     });
-  }
-
-  void loadItemCategories() async {
-    var token = Token.get();
-    final Map<String, String> header = {
-      "Authorization": "Bearer $token",
-      "Content-type": "application/json"
-    };
-
-    http.Response response = await http.get(
-      AppConstants.apiURL + "/categories",
-      headers: header,
-    );
-
-    if (response.statusCode == 200) {
-      List<dynamic> categories = jsonDecode(response.body);
-      categories.forEach((item) =>
-        Categories.categories.add(new Category(id: item.id, name: item.name, description: item.description))
-      );
-    }
   }
 
   @override
