@@ -42,7 +42,7 @@ class _MyOrdersState extends State<MyOrders> {
             });
           },
           child: ListView.builder(
-            itemCount: 17,
+            itemCount: User.ownedOrders.isEmpty ? 0 : User.ownedOrders.length,
             itemBuilder: (BuildContext context, int index) {
               return OrderCard(User.ownedOrders[index]);
             },

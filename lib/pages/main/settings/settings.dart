@@ -1,10 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:shopconnect/models/user.dart';
 
 class Settings extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: ImageIcon(
+            AssetImage('lib/assets/images/logout.png'),
+          ),
+          onPressed: () async {
+            await User.logout(context);
+          },
+        ),
+      ),
     );
   }
 }

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
 import 'package:shopconnect/constants.dart';
 import 'package:shopconnect/enums/orderstate.dart';
 import 'package:shopconnect/models/item.dart';
@@ -76,5 +77,26 @@ class User {
         },
       );
     }
+  }
+
+  static Future<void> logout(BuildContext context) async {
+    var token = await Token.get();
+    final Map<String, String> header = {
+      "Authorization": "Bearer $token",
+      "Content-type": "application/json"
+    };
+
+    await http.get(
+      AppConstants.apiURL + "/auth/logout",
+      headers: header,
+    );
+
+    await Token.delete();
+
+    Navigator.pushNamedAndRemoveUntil(
+      context,
+      '/start',
+      (Route<dynamic> route) => false,
+    );
   }
 }
