@@ -45,6 +45,7 @@ class Lists {
     if (response.statusCode == 200) {
       var responseBody = jsonDecode(response.body);
       List<dynamic> itemList = jsonDecode(responseBody['items']);
+      items.clear();
       itemList.forEach((item) =>
         items.add(new Item(id: item['id'], name: item['name'], description: item['description'],
         price: item['price'], quantity: item['quantity'], category: item['category'], isOptional: item['isOptional']))
