@@ -2,7 +2,9 @@ import 'dart:convert';
 
 import 'package:shopconnect/constants.dart';
 import 'package:shopconnect/enums/orderstate.dart';
+import 'package:shopconnect/models/item.dart';
 import 'package:shopconnect/models/order.dart';
+import 'package:shopconnect/models/orderitem.dart';
 import 'package:shopconnect/utils/token.dart';
 import 'package:http/http.dart' as http;
 
@@ -36,15 +38,32 @@ class User {
       AppConstants.apiURL + "/user/@me/orders",
       headers: header,
     );
+    print(response.body);
     if (response.statusCode == 200) {
       List<dynamic> orders = jsonDecode(response.body);
       orders.forEach(
         (item) {
-          List<int> items = [];
-          if (item['items'].length > 0) {
-            item['items'].forEach((item) {
-              items.add(item['id']);
-            });
+          List<OrderItem> items = [];
+          if (item['items'] != null) {
+            if (item['items'].length > 0) {
+              item['items'].forEach((item) {
+                var itemH = item['item'];
+                items.add(
+                  OrderItem(
+                    id: item['id'],
+                    quantity: item['quantity'],
+                    isOptional: item['isOptional'],
+                    item: Item(
+                      id: itemH['id'],
+                      name: itemH['name'],
+                      description: itemH['description'],
+                      price: double.parse(itemH['price']),
+                      category: itemH[''],
+                    ),
+                  ),
+                );
+              });
+            }
           }
           User.ownedOrders.add(
             new Order(

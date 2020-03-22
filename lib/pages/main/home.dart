@@ -1,14 +1,7 @@
-import 'dart:convert';
-
-import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
-import 'package:shopconnect/constants.dart';
-import 'package:shopconnect/models/category.dart';
 import 'package:shopconnect/pages/main/myorders/myorders.dart';
 import 'package:shopconnect/pages/main/orders/orders.dart';
 import 'package:shopconnect/pages/main/settings/settings.dart';
-import 'package:shopconnect/utils/lists.dart';
-import 'package:shopconnect/utils/token.dart';
 
 class Home extends StatefulWidget {
   @override

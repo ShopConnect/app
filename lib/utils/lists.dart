@@ -48,7 +48,7 @@ class Lists {
       items.clear();
       itemList.forEach((item) =>
         items.add(new Item(id: item['id'], name: item['name'], description: item['description'],
-        price: item['price'], quantity: item['quantity'], category: item['category'], isOptional: item['isOptional']))
+        price: item['price'], category: item['category']))
       );
     }
   }
