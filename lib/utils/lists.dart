@@ -38,7 +38,7 @@ class Lists {
     };
 
     http.Response response = await http.get(
-      AppConstants.apiURL + "/items/$id",
+      AppConstants.apiURL + "/categories/$id",
       headers: header,
     );
 
