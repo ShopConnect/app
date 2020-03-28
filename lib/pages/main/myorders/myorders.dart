@@ -37,9 +37,11 @@ class _MyOrdersState extends State<MyOrders> {
           key: _refreshIndicatorKey,
           onRefresh: () async {
             await User.loadOrders();
-            setState(() {
-              User.ownedOrders = User.ownedOrders;
-            });
+            if (mounted) {
+              setState(() {
+                User.ownedOrders = User.ownedOrders;
+              });
+            }
           },
           child: ListView.builder(
             itemCount: User.ownedOrders.isEmpty ? 0 : User.ownedOrders.length,

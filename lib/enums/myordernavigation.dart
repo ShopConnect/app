@@ -1,0 +1,4 @@
+enum MyOrderNavigation {
+  Active,
+  Finished,
+}

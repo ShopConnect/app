@@ -34,7 +34,7 @@ class ShopConnect extends StatelessWidget {
       theme: ThemeData(
         primaryColor: Color(0xFF3CA8BA),
         accentColor: Color(0xFFDEDEDEDE),
-        primarySwatch: Colors.blue,
+        backgroundColor: Color(0xFFF1F1F1),
       ),
       initialRoute: initialRoute,
       routes: {

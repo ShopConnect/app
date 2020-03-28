@@ -8,7 +8,7 @@ class Settings extends StatelessWidget {
       appBar: AppBar(
         leading: IconButton(
           icon: ImageIcon(
-            AssetImage('lib/assets/images/logout.png'),
+            AssetImage('assets/images/logout.png'),
           ),
           onPressed: () async {
             await User.logout(context);

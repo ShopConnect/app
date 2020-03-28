@@ -7,7 +7,7 @@ class StartPage extends StatelessWidget {
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('lib/assets/images/start_background.jpg'),
+            image: AssetImage('assets/images/start_background.jpg'),
             fit: BoxFit.cover,
             alignment: Alignment.center,
           ),
@@ -28,7 +28,7 @@ class StartPage extends StatelessWidget {
                     margin: EdgeInsets.only(bottom: 20),
                     decoration: BoxDecoration(
                       image: DecorationImage(
-                        image: AssetImage('lib/assets/images/logo.png'),
+                        image: AssetImage('assets/images/logo.png'),
                       ),
                     ),
                   ),

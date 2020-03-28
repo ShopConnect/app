@@ -16,24 +16,36 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
+  final FocusNode _emailFocusNode = FocusNode();
+  final FocusNode _passwordFocusNode = FocusNode();
   bool _autoValidate = false;
   String _email;
   String _password;
   bool _wrongPassword = false;
-  // TODO: Message box that informs the user he is BANNED
   bool _userDeactivated = false;
+  bool _userNotFound = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('Anmelden')),
-      body: SingleChildScrollView(
-        child: Container(
-          margin: EdgeInsets.all(15.0),
-          child: Form(
-            key: _formKey,
-            autovalidate: _autoValidate,
-            child: formUI(),
+      body: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/images/start_background.jpg'),
+            fit: BoxFit.cover,
+            alignment: Alignment.center,
+          ),
+        ),
+        constraints: BoxConstraints.expand(),
+        child: SingleChildScrollView(
+          child: Container(
+            margin: EdgeInsets.all(15.0),
+            child: Form(
+              key: _formKey,
+              autovalidate: _autoValidate,
+              child: formUI(),
+            ),
           ),
         ),
       ),
@@ -43,29 +55,73 @@ class _LoginPageState extends State<LoginPage> {
   Widget formUI() {
     return Column(
       children: <Widget>[
-        TextFormField(
-          decoration: const InputDecoration(labelText: 'E-Mail Adresse'),
-          keyboardType: TextInputType.emailAddress,
-          validator: validateEmail,
-          onSaved: (String val) {
-            _email = val;
-          },
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: TextFormField(
+            decoration: const InputDecoration(
+              labelText: 'E-Mail Adresse',
+              filled: true,
+              fillColor: Color.fromRGBO(255, 255, 255, 0.8),
+              errorMaxLines: 3,
+              errorStyle: TextStyle(
+                fontSize: 14.0,
+              ),
+            ),
+            keyboardType: TextInputType.emailAddress,
+            textInputAction: TextInputAction.next,
+            validator: validateEmail,
+            focusNode: _emailFocusNode,
+            onFieldSubmitted: (_) {
+              _emailFocusNode.unfocus();
+              FocusScope.of(context).requestFocus(_passwordFocusNode);
+            },
+            onSaved: (String val) {
+              _email = val;
+            },
+          ),
         ),
-        TextFormField(
-          decoration: const InputDecoration(labelText: 'Passwort'),
-          obscureText: true,
-          keyboardType: TextInputType.visiblePassword,
-          validator: validatePassword,
-          onSaved: (String val) {
-            _password = val;
-          },
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: TextFormField(
+            decoration: const InputDecoration(
+              labelText: 'Passwort',
+              filled: true,
+              fillColor: Color.fromRGBO(255, 255, 255, 0.8),
+              errorMaxLines: 3,
+              errorStyle: TextStyle(
+                fontSize: 14.0,
+              ),
+            ),
+            obscureText: true,
+            keyboardType: TextInputType.visiblePassword,
+            textInputAction: TextInputAction.done,
+            focusNode: _passwordFocusNode,
+            validator: validatePassword,
+            onSaved: (String val) {
+              _password = val;
+            },
+          ),
         ),
         SizedBox(
           height: 10,
         ),
-        RaisedButton(
-          onPressed: _validateInputs,
-          child: Text('Anmelden'),
+        Container(
+          margin: EdgeInsets.only(left: 50, right: 50),
+          width: MediaQuery.of(context).size.width,
+          child: RaisedButton(
+            color: Theme.of(context).primaryColor,
+            padding: EdgeInsets.only(top: 20, bottom: 20),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(50.0),
+            ),
+            elevation: 5,
+            textColor: Colors.white,
+            child: Text(
+              'Anmelden',
+              style: TextStyle(fontSize: 20),
+            ),
+            onPressed: _validateInputs,
+          ),
         ),
       ],
     );
@@ -77,6 +133,10 @@ class _LoginPageState extends State<LoginPage> {
     RegExp regex = RegExp(pattern);
     if (!regex.hasMatch(value)) {
       return 'Bitte geben Sie eine gültige E-Mail Adresse ein!';
+    } else if (_userDeactivated) {
+      return 'Dieser Account wurde aus dem System ausgeschlossen.';
+    } else if (_userNotFound) {
+      return 'Diese E-Mail Adresse konnte keinem Account zugeordnet werden!';
     } else {
       return null;
     }
@@ -97,13 +157,12 @@ class _LoginPageState extends State<LoginPage> {
       _formKey.currentState.save();
       login();
     } else {
-      setState(() {
-        _autoValidate = true;
-      });
+      changeValidate(true);
     }
   }
 
   void login() async {
+    _userNotFound = false;
     String fcmToken = await _firebaseMessaging.getToken();
 
     String json = '{"email": "$_email", "password": "$_password"}';
@@ -125,8 +184,8 @@ class _LoginPageState extends State<LoginPage> {
           "Content-type": "application/json"
         };
 
-        http.Response responseUser = await http
-            .get(AppConstants.apiURL + "/user/@me", headers: header);
+        http.Response responseUser =
+            await http.get(AppConstants.apiURL + "/user/@me", headers: header);
 
         int statusCodeUser = responseUser.statusCode;
         if (statusCodeUser == 200) {
@@ -154,32 +213,40 @@ class _LoginPageState extends State<LoginPage> {
           );
           int statusCodeToken = responseToken.statusCode;
 
-          User.loadOrders();
-
-          if (statusCodeToken == 201) {
+          // TODO: If 201 or schon vorhanden Navigate ausführen sonst? <-- einbauen sobald Nick go gibt
             Navigator.pushNamedAndRemoveUntil(
               context,
               '/home',
               (Route<dynamic> route) => false,
             );
-          }
         }
       }
     } else if (statusCode == 401) {
       var result = jsonDecode(response.body);
       if (result['message'] == 'password') {
         _wrongPassword = true;
+        changeValidate(true);
       } else {
         _wrongPassword = false;
       }
 
       if (result['message'] == 'deactivated') {
         _userDeactivated = true;
+        changeValidate(true);
       } else {
         _userDeactivated = false;
       }
     } else if (statusCode == 404) {
-      //TODO: Add post message that register failed because username is already in use
+      _userNotFound = true;
+      changeValidate(true);
+    }
+  }
+
+  void changeValidate(bool validate) {
+    if (mounted) {
+      setState(() {
+        _autoValidate = validate;
+      });
     }
   }
 }
